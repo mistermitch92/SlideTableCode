@@ -34,31 +34,43 @@ rate=0.02
 def to_near_lim(home_delay):
 	'''Move the slide table to the motorside (home position)
 	Args:
-		none
+		home_delay (float): minimum delay between steps (may be extra)
 	Output:
-		none
+		n_steps (int): # of steps taken
 	'''
-	while GPIO.input(Near_lim) == True:
-		step_start=time.perf_counter()
-		kit.stepper1.onestep(direction=stepper.BACKWARD, style=stepper.SINGLE)
-		accurate_sleep(home_delay, step_start)
+	n_steps = 0
+	try:
+		while GPIO.input(Near_lim) == True:
+			step_start=time.perf_counter()
+			kit.stepper1.onestep(direction=stepper.BACKWARD, style=stepper.SINGLE)
+			accurate_sleep(home_delay, step_start)
+			n_steps = n_steps + 1
+		return n_steps
+	except KeyboardInterrupt:
+		return n_steps
 
 def to_far_lim(out_delay):
 	'''move the slide table to the non-motor side (far position)
 	Args:
-		none
+		home_delay (float): minimum delay between steps (may be extra)
 	Output:
-		none
+		n_steps (int): # of steps taken
 	'''
-	while GPIO.input(Far_lim) == True:
-		step_start=time.perf_counter()
-		kit.stepper1.onestep(direction=stepper.FORWARD, style=stepper.SINGLE)
-		accurate_sleep(out_delay, step_start)
-
+	n_steps = 0
+	try:
+		while GPIO.input(Far_lim) == True:
+			step_start=time.perf_counter()
+			kit.stepper1.onestep(direction=stepper.FORWARD, style=stepper.SINGLE)
+			accurate_sleep(out_delay, step_start)
+			n_steps = n_steps + 1
+		return n_steps
+	except KeyboardInterrupt:
+		return n_steps
 
 while True:
 	travel_to = '' #initialize/reset travel_to
 	travel_speed = 0 #initialize/reset travel_speed
+	n_steps = 0 #intitialize/reset n_steps
 	travel_to = input('Type HOME or OUT: ') #ask if homing or going out
 	travel_speed = input('Travel Rate, max 4 (mm/s)): ') #how fast to move table
 	travel_speed = float(travel_speed) #convert to a float
@@ -68,18 +80,18 @@ while True:
 		if time_delay == 0:
 			time_delay = home_delay
 		print('HOMING at ',"%.2f" % travel_speed,'mm/s')
-		to_near_lim(time_delay)
+		n_steps = to_near_lim(time_delay)
 		print('HOMED')
 	elif travel_to == "OUT":
 		if time_delay == 0:
 			time_delay = out_delay
 		print('Traveling OUT at ',"%.2f" % travel_speed,'mm/s')
-		to_far_lim(time_delay)
+		n_steps = to_far_lim(time_delay)
 		print('Fully Extended (OUT)')
 
 
 	travel_elapsed_time = time.perf_counter()-travel_time_start
-	avg_speed = 156 / travel_elapsed_time #156mm / elapsed travel time
+	avg_speed = n_steps*rate / travel_elapsed_time #steps * mm/step / elapsed travel time
 	print('Average Travel Speed = ',"%.3f" % avg_speed,'mm/s')
 	print('restarting loop...')
 	travel_to = None
