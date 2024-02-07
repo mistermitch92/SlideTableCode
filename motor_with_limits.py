@@ -13,16 +13,16 @@ GPIO.setup(Near_lim, GPIO.IN)
 
 kit = MotorKit(i2c=busio.I2C(board.SCL,  board.SDA, frequency=400000))
 
-def get_temp()
+def get_temp():
 	'''Call the heating setpoint and the most recent temps from the probes
 	Args:
 		none
 	
-	Output: 
-		set_point (float): 
-	 	probe1 (float):
-	  	probe2 (float):
-	 '''
+   	Output: 
+		set_point (float): set-point for heater in C 
+		probe1 (float): Probe 1 temp in C
+		probe2 (float): Probe 2 temp in C
+     		'''
 	set_point = None
 	probe1 = None
 	probe2 = None
@@ -30,15 +30,15 @@ def get_temp()
 	return set_point, probe1, probe2
 
 def accurate_sleep(target_duration, start_time):
-    '''Accurately measure sleep time for a set duration
+    	'''Accurately measure sleep time for a set duration
 
         Args: target_duration (float): length of sleep in seconds
               start_time (float): the starting time (use perf_counter)'''
-    while True:
-        current_time = time.perf_counter()
-        elapsed_time = current_time - start_time
-        if elapsed_time > target_duration:
-            break
+    	while True:
+        	current_time = time.perf_counter()
+        	elapsed_time = current_time - start_time
+        	if elapsed_time > target_duration:
+            	break
         
 #default delays between steps (in milliseconds)
 out_delay=10/1000
